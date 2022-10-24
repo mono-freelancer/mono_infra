@@ -1,0 +1,9 @@
+- hosts: masters
+  gather_facts: false
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: debug ansible_env
+    debug:
+      var: ansible_env

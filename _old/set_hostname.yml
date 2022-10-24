@@ -1,0 +1,24 @@
+- hosts: master-0
+  gather_facts: false
+  tasks:
+    - name: set hostname
+      become: true
+      hostname:
+        name: master-0
+
+- hosts: master-1
+  gather_facts: false
+  tasks:
+    - name: set hostname
+      become: true
+      hostname:
+        name: master-1
+
+- hosts: master-2
+  gather_facts: false
+  tasks:
+    - name: set hostname
+      become: true
+      hostname:
+        name: master-2
+

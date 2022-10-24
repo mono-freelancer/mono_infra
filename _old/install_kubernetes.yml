@@ -1,0 +1,93 @@
+- hosts: masters
+  connection: ssh
+  gather_facts: true
+  become: yes
+  become_method: sudo
+
+  tasks:
+#  - name: install packsges
+#    yum:
+#      name: "{{ packages }}"
+#    vars:
+#      packages:
+#        - yum-utils
+#        - device-mapper-persistent-data
+#        - lvm2
+
+#  - name: install docker
+#    yum:
+#      name: "{{ packages }}"
+#    vars:
+#      packages:
+#        - docker-ce
+#        - docker-ce-cli
+#        - containerd.io
+
+  - name: get docker key
+    shell:
+      cmd: |
+        sudo rm -f /usr/share/keyrings/docker-archive-keyring.gpg
+        sudo rm -f /etc/apt/sources.list.d/docker.list
+        curl -fsSL https://download.docker.com/linux/debian/gpg | \
+        gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+        $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+#  - name: add docker list
+#    shell:
+#      cmd: |
+#        echo "deb [arch=$(dpkg --print-architecture) " \
+#             "signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] " \
+#             "https://download.docker.com/linux/debian $(lsb_release -cs) stable" | 
+#        tee /etc/apt/sources.list.d/docker.list >/dev/null
+
+#  - name: Set the stable docker repository
+#    apt_repository:
+      #      repo: "deb [arch=armhf signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian bullseye stable"
+#      repo: "deb [arch=arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian bullseye stable"
+#      state: present
+#      update_cache: yes
+
+  - name: install docker
+    apt:
+      pkg:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+      state: latest
+      update_cache: true
+
+  - name: start docker
+    systemd:
+      name: docker
+      state: started
+      enabled: yes
+
+  - name: add kubernetes repo
+    yum_repository:
+      name: kubernetes
+      description: kubernetes repo
+      baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+      gpgcheck: no
+      enabled: yes
+
+  - name: install kubelet libeadm
+    yum:
+      name: "{{ packages }}"
+    vars:
+      packages:
+        - kubelet
+        - kubeadm
+      state: present
+
+  - name: start kubelet
+    systemd:
+      name: kubelet
+      state: started
+      enabled: yes
+
+  - name: install kubectl
+    yum:
+      name: kubectl
+      state: present
+      allow_downgrade: yes

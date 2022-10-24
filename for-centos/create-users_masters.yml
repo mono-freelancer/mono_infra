@@ -1,0 +1,25 @@
+---
+- hosts: masters
+  become: yes
+  gather_facts: false
+  vars_files:
+    - ./vars/users-list_masters.yml
+  tasks:
+  - name: Create user
+    user:
+      #state: absent # if delete
+      name: "{{ item.name }}"
+      password: "{{ item.password }}"
+      groups:  "{{ item.group }}"
+      shell: /bin/bash
+    with_items:
+      - "{{ users }}"
+    when: users # check user exists
+
+  - name: Add sudo permittion
+    lineinfile:
+      dest: /etc/sudoers
+      backup: no
+      line: 'pi ALL=(ALL) NOPASSWD: ALL'
+      
+#EOF

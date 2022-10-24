@@ -1,0 +1,58 @@
+- hosts: bation
+  gather_facts: true
+  become: yes
+  become_method: sudo
+
+  tasks:
+
+    - name: Install Packages
+      package:
+        name:
+        - curl
+        - nginx
+        - nfs-server
+
+    - name: Enable nginx systemd
+      systemd:
+        name: nginx
+        state: started
+        daemon_reload: yes
+        enabled: yes
+
+    - name: Enable nfs-server systemd
+      systemd:
+        name: nfs-server
+        daemon_reload: yes
+        enabled: yes
+
+    - name: Install Google Cloud public signing key
+      get_url:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        dest: /usr/share/keyrings/kubernetes-archive-keyring.gpg
+        mode: '0644'
+
+    - name: Add the Kubernetes apt repository
+      lineinfile:
+        path: /etc/apt/sources.list.d/kubernetes.list
+        line: deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
+        create: yes
+
+    - name: Install containerd Kubernetes Packages
+      apt:
+        pkg:
+#        - docker.io
+#        - containerd
+#        - kubelet
+#        - kubeadm
+        - kubectl
+        update_cache: yes
+
+    - name: Hold Kubernetes Packages
+      dpkg_selections:
+        name: '{{item}}'
+        selection: hold
+      with_items:
+#      - kubelet
+#      - kubeadm
+      - kubectl
+

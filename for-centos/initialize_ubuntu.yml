@@ -1,0 +1,14 @@
+- hosts: masters
+  become: yes
+  become_method: sudo
+  tasks:
+
+  - name: apt update
+    apt:
+      update_cache: true
+
+  - name: apt upgrade
+    apt:
+      upgrade: yes
+
+

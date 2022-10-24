@@ -1,0 +1,16 @@
+- hosts: localhost
+  gather_facts: false
+  tasks:
+  - name: Set timezone to Asia/Tokyo
+    community.general.timezone:
+      name: Asia/Tokyo
+    become: true
+
+- hosts: masters
+  gather_facts: false
+  tasks:
+  - name: Set timezone to Asia/Tokyo
+    community.general.timezone:
+      name: Asia/Tokyo
+    become: true
+

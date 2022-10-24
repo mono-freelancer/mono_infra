@@ -1,0 +1,63 @@
+- hosts: masters
+  connection: ssh
+  gather_facts: True
+
+  tasks:
+#   - name: disable SELinux
+#     command: setenforce 0
+
+#   - name: disable SELinux on reboot
+#     selinux:
+#       state: disabled
+
+#   - name: modprebe br_netfilter
+#     command: modprobe br_netfilter
+
+#   - name: ensure net.bridge.bridge-nf-call-iptables is set to 1
+#     sysctl:
+#      name: net.bridge.bridge-nf-call-iptables
+#      value: 1
+#      state: present
+
+   - name: disable swap
+     command: swapoff -a
+     become: true
+
+#   - name: Generate /etc/hosts file
+#     template:
+#       src=hosts.j2
+#       dest=/etc/hosts
+
+#   - name: diable firewalld
+#     systemd:
+#       name: firewalld
+#       state: stopped
+#       enabled: no
+
+  - name: "apt update cache & full system update"
+    apt:
+      update_cache: yes
+      upgrade: dist
+      cache_valid_time: 3600
+      force_apt_get: true
+
+  - name: uninstall docker relative pkgs
+    apt:
+      pkg: 
+        - docker
+        - docker-engine
+        - docker.io
+        - containerd
+        - runc
+      state: absent
+
+  - name: install docker relative pkgs
+    apt:
+      pkg:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg
+        - lsb-release
+      state: latest
+      update_cache: true

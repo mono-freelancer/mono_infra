@@ -1,0 +1,57 @@
+- hosts: masters
+  gather_facts: false
+  become: yes
+  become_method: sudo
+
+  tasks:
+
+#  - name: add download repository
+#    shell: 'dnf config-manager --add-repo=https://download.docker.com linux/centos/docker-ce.repo'
+
+  - name: add download repository
+    shell: 'curl https://download.docker.com/linux/centos/docker-ce.repo -o /etc/yum.repos.d/docker-ce.repo'
+
+  - name: enable docker repo
+    shell: 'sed -i -e "s/enabled=1/enabled=0/g" /etc/yum.repos.d/docker-ce.repo'
+
+  - name: update repository url in yum.repos.d
+    shell: 'sed -i "s/mirrorlist=/#mirrorlist=/g" /etc/yum.repos.d/centos*; sed -i "s|metalink=https://mirrors.centos.org|metalink=https://vault.centos.org|g" /etc/yum.repos.d/centos*'
+
+  - name: update repository
+    shell: 'dnf check-update'
+
+  - name: install docker-ce
+    shell: 'dnf --enablerepo=docker-ce-stable -y install docker-ce'
+
+#  - name: install docker packages
+#    dnf:
+#      name:
+#      - docker-ce
+#      - docker-ce-cli
+#      state: latest
+
+  - name: make docker directory
+    file:
+      path: "{{ item.path }}"
+      state: directory
+      owner: "root"
+      group: "root"
+      mode: "755"
+    loop:
+    - path: "/etc/docker"
+    - path: "/etc/systemd/system/docker.service.d"
+
+  - name: distribute docker daemon.json
+    copy:
+      src: ./files/etc-docker-daemon.json
+      dest: /etc/docker/daemon.json
+      mode: '0644'
+
+  - name: start & enable docker daemon
+    systemd:
+      name: dockerx
+      state: start
+      daemon_reload: yes
+      enabled: yes
+
+

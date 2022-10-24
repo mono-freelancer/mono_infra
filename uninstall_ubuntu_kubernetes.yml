@@ -1,0 +1,26 @@
+- hosts: masters
+  gather_facts: true
+  become: yes
+  become_method: sudo
+
+  tasks:
+
+    - name: Unhold Kubernetes Packages
+      dpkg_selections:
+        name: '{{item}}'
+        selection: install 
+      with_items:
+      - kubelet
+      - kubeadm
+      - kubectl
+
+    - name: Unstall containerd Kubernetes Packages
+      apt:
+        pkg:
+        - docker.io
+        - containerd
+        - kubelet
+        - kubeadm
+        - kubectl
+        state: absent
+

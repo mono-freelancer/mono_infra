@@ -1,0 +1,101 @@
+- hosts: masters
+  become: true
+  gather_facts: false
+  vars_files:
+    - ./vars/main.yml
+
+  tasks:
+  - name: distribute /etc/hosts
+    ansible.builtin.template:
+      src: ./templates/etc-hosts.j2
+      dest: /etc/hosts
+      owner: root
+      group: root
+      mode: '0644'
+    become: yes
+
+  - name: Set timezone to Asia/Tokyo
+    community.general.timezone:
+      name: Asia/Tokyo
+    become: true
+
+  - name: install ja_JP locale
+    dnf:
+      name:
+        - glibc-locale-source
+        - glibc-langpack-en
+        - glibc-langpack-ja
+      state: latest
+
+  - name: set locale ja_JP.UTF-8
+    shell: localectl set-locale LANG=ja_JP.utf8
+
+  - name: change keymap to Japanese 109
+    shell: localectl set-keymap jp-OADG109A
+
+#  - name: change x11 keymap to Japanese 109
+#    shell: localectl set-x11-keymap jp-OADG109A
+
+#  - name: yum update 
+#    yum:
+#      name: '*'
+#      state: latest
+#    async: 1000
+
+  - name: install essential pkgs
+    yum:
+      name:
+        - net-tools
+        - git
+#        - nfs-common
+      state: latest
+
+  - name: get swap state
+    shell: swapon -v
+    register: swap_state
+    check_mode: false
+    changed_when: false
+
+  - name: swap off
+    shell: swapoff -a
+    when: swap_state.stdout != ''
+
+  - name: swap check (/etc/fstab)
+    shell: grep -v "\s*#" /etc/fstab | awk '{print $2}' | grep swap -c
+    register: swap_state_in_fstab
+    check_mode: false
+    changed_when: false
+    ignore_errors: true
+
+  - name: disable swap (/etc/fstab)
+    replace:
+      path: /etc/fstab
+      regexp: ([^\s]+\s+swap\s+.*)
+      replace: '# \1'
+    when: swap_state_in_fstab.stdout != '0'
+
+  - name: disable firewalld
+    systemd:
+      name: firewalld
+      state: stopped
+      enabled: false
+
+  - name: disable SELinux ... enable -> permissive
+    ansible.posix.selinux: state=disabled
+
+#  - name: reboot
+#    ansible.builtin.reboot: reboot_timeout=600
+#    become: true
+
+  - name: Setting Sysctl
+    lineinfile:
+      path: /etc/sysctl.conf
+      regexp: '^{{item.regexp}}.*'
+      line: '{{item.line}}'
+    with_items:
+    - regexp: net.ipv4.ip_forward
+      line: net.ipv4.ip_forward=1
+    - regexp: net.bridge.bridge-nf-call-ip6table
+      line: net.bridge.bridge-nf-call-ip6table=1
+    - regexp: net.bridge.bridge-nf-call-iptables
+      line: net.bridge.bridge-nf-call-iptables=1
