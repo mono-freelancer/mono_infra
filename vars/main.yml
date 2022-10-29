@@ -1,11 +1,23 @@
+# bation
 hostname01: bation
-hostname02: master-0
-hostname03: master-1
-hostname04: master-2
-hostname05: cp.k8s.mono
+
+# west
+hostname02: w-master-0
+hostname03: w-master-1
+hostname04: w-master-2
+hostname05: west.cp.k8s.mono
 ipaddress01: 192.168.1.199
 ipaddress02: 192.168.1.200
 ipaddress03: 192.168.1.201
 ipaddress04: 192.168.1.202
 ipaddress05: 192.168.1.200
 
+# east
+hostname06: e-master-0
+hostname07: e-master-1
+hostname08: e-master-2
+hostname09: east.cp.k8s.mono
+ipaddress06: 192.168.1.210
+ipaddress07: 192.168.1.211
+ipaddress08: 192.168.1.212
+ipaddress09: 192.168.1.210

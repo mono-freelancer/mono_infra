@@ -1,4 +1,4 @@
-- hosts: masters
+- hosts: west-masters
   gather_facts: false
   become: true
 

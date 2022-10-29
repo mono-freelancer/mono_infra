@@ -1,4 +1,4 @@
-- hosts: masters
+- hosts: west-masters
   gather_facts: true
   become: yes
   become_method: sudo

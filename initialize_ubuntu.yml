@@ -1,4 +1,4 @@
-- hosts: masters
+- hosts: west-masters
   become: true
   gather_facts: false
   vars_files:
@@ -32,8 +32,8 @@
     lineinfile:
       dest: /etc/cloud/cloud.cfg
       state: present
-      regexp: '^ - update_hostname'
-      line: '# - update_hostname'
+      regexp: '^ - update_etc_hosts'
+      line: '# - update_etc_hosts'
 
   - name: Set timezone to Asia/Tokyo
     community.general.timezone:
